@@ -17,12 +17,50 @@ import json
 import os
 from itertools import combinations
 from typing import Any, Dict, Iterable, List, Optional, Union
+
 import numpy as np
 import pandas as pd
 
 from nemo.collections.common.parts.preprocessing import manifest, parsers
 from nemo.utils import logging, logging_mode
 
+SpeechLabelEntity = collections.namedtuple(
+        typename='SpeechLabelEntity',
+        field_names='audio_file duration label offset',
+    )
+
+TextEntity = collections.namedtuple('TextEntity', 'tokens')
+
+AudioTextEntity = collections.namedtuple(
+        typename='AudioTextEntity',
+        field_names='id audio_file duration text_tokens offset text_raw speaker orig_sr lang',
+    )
+
+AudioTextEntityV = collections.namedtuple(
+        typename='AudioTextEntity',
+        field_names='id video_file duration text_tokens offset text_raw speaker orig_sr lang',
+    )
+FeatureSequenceLabelEntity = collections.namedtuple(
+        typename='FeatureSequenceLabelEntity',
+        field_names='feature_file seq_label',
+    )
+
+DiarizationLabelEntity = collections.namedtuple(
+        typename='DiarizationLabelEntity',
+        field_names='audio_file duration rttm_file offset target_spks sess_spk_dict clus_spk_digits rttm_spk_digits',
+    )
+
+Audio = collections.namedtuple(typename='Audio', field_names='audio_files duration offset text')
+
+FeatureLabelEntity = collections.namedtuple(
+        typename='FeatureLabelEntity',
+        field_names='feature_file label duration',
+    )
+
+FeatureTextEntity = collections.namedtuple(
+        typename='FeatureTextEntity',
+        field_names='id feature_file rttm_file duration text_tokens offset text_raw speaker orig_sr lang',
+    )
 
 class _Collection(collections.UserList):
     """List of parsed and preprocessed data."""
@@ -33,7 +71,7 @@ class _Collection(collections.UserList):
 class Text(_Collection):
     """Simple list of preprocessed text entries, result in list of tokens."""
 
-    OUTPUT_TYPE = collections.namedtuple('TextEntity', 'tokens')
+    OUTPUT_TYPE = TextEntity
 
     def __init__(self, texts: List[str], parser: parsers.CharParser):
         """Instantiates text manifest and do the preprocessing step.
@@ -91,10 +129,7 @@ class FromFileText(Text):
 class AudioText(_Collection):
     """List of audio-transcript text correspondence with preprocessing."""
 
-    OUTPUT_TYPE = collections.namedtuple(
-        typename='AudioTextEntity',
-        field_names='id audio_file duration text_tokens offset text_raw speaker orig_sr lang',
-    )
+    OUTPUT_TYPE = AudioTextEntity
 
     def __init__(
         self,
@@ -202,10 +237,7 @@ class AudioText(_Collection):
 class VideoText(_Collection):
     """List of video-transcript text correspondence with preprocessing."""
 
-    OUTPUT_TYPE = collections.namedtuple(
-        typename='AudioTextEntity',
-        field_names='id video_file duration text_tokens offset text_raw speaker orig_sr lang',
-    )
+    OUTPUT_TYPE = AudioTextEntityV
 
     def __init__(
         self,
@@ -666,10 +698,7 @@ class SpeechLLMAudioTextCollection(SpeechLLMAudioText):
 class SpeechLabel(_Collection):
     """List of audio-label correspondence with preprocessing."""
 
-    OUTPUT_TYPE = collections.namedtuple(
-        typename='SpeechLabelEntity',
-        field_names='audio_file duration label offset',
-    )
+    OUTPUT_TYPE = SpeechLabelEntity
 
     def __init__(
         self,
@@ -830,10 +859,7 @@ class ASRSpeechLabel(SpeechLabel):
 class FeatureSequenceLabel(_Collection):
     """List of feature sequence of label correspondence with preprocessing."""
 
-    OUTPUT_TYPE = collections.namedtuple(
-        typename='FeatureSequenceLabelEntity',
-        field_names='feature_file seq_label',
-    )
+    OUTPUT_TYPE = FeatureSequenceLabelEntity
 
     def __init__(
         self,
@@ -969,10 +995,7 @@ class ASRFeatureSequenceLabel(FeatureSequenceLabel):
 class DiarizationLabel(_Collection):
     """List of diarization audio-label correspondence with preprocessing."""
 
-    OUTPUT_TYPE = collections.namedtuple(
-        typename='DiarizationLabelEntity',
-        field_names='audio_file duration rttm_file offset target_spks sess_spk_dict clus_spk_digits rttm_spk_digits',
-    )
+    OUTPUT_TYPE = DiarizationLabelEntity
 
     def __init__(
         self,
@@ -1246,7 +1269,7 @@ class DiarizationSpeechLabel(DiarizationLabel):
 class Audio(_Collection):
     """Prepare a list of all audio items, filtered by duration."""
 
-    OUTPUT_TYPE = collections.namedtuple(typename='Audio', field_names='audio_files duration offset text')
+    OUTPUT_TYPE = Audio
 
     def __init__(
         self,
@@ -1427,10 +1450,7 @@ class AudioCollection(Audio):
 class FeatureLabel(_Collection):
     """List of feature sequence and their label correspondence with preprocessing."""
 
-    OUTPUT_TYPE = collections.namedtuple(
-        typename='FeatureLabelEntity',
-        field_names='feature_file label duration',
-    )
+    OUTPUT_TYPE = FeatureLabelEntity 
 
     def __init__(
         self,
@@ -1564,10 +1584,7 @@ class ASRFeatureLabel(FeatureLabel):
 class FeatureText(_Collection):
     """List of audio-transcript text correspondence with preprocessing."""
 
-    OUTPUT_TYPE = collections.namedtuple(
-        typename='FeatureTextEntity',
-        field_names='id feature_file rttm_file duration text_tokens offset text_raw speaker orig_sr lang',
-    )
+    OUTPUT_TYPE = FeatureTextEntity
 
     def __init__(
         self,
